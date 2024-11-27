@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import Deck from './components/Deck/Deck';
+import backgroundImage from './assets/japanese gradients/O.png';
 
 function App() {
   const [userInput, setUserInput] = useState('');
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+    <div style={{ 
+      width: '100vw', 
+      height: '100vh', 
+      display: 'flex',
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}>
       {/* Left Half - Question and Input */}
       <div style={{ 
         flex: '1',
@@ -15,11 +23,12 @@ function App() {
         fontFamily: '"Cormorant Garamond", serif'
       }}>
         <h1 style={{ 
-          fontSize: '48px',
+          fontSize: '64px',
           fontWeight: '300',
           marginBottom: '4vh',
           color: '#333',
-          lineHeight: '1.2'
+          lineHeight: '1.2',
+          fontFamily: '"Libre Baskerville", serif'
         }}>
           what do you see?
         </h1>
@@ -32,16 +41,14 @@ function App() {
             minHeight: '200px',
             background: 'transparent',
             border: 'none',
-            borderBottom: '1px solid #ddd',
-            fontSize: '24px',
+            fontSize: '28px',
             lineHeight: '1.6',
-            fontFamily: 'inherit',
+            fontFamily: '"Libre Baskerville", serif',
             resize: 'none',
             outline: 'none',
-            color: '#444',
+            color: '#666',
             padding: '1rem 0'
           }}
-          placeholder="write your vision..."
         />
       </div>
 
@@ -56,8 +63,10 @@ function App() {
       }}>
         <div style={{ 
           position: 'relative',
-          width: '300px',
-          height: '450px'
+          width: '600px',
+          height: '900px',
+          transform: 'scale(0.6)',
+          transformOrigin: 'center center'
         }}>
           <Deck />
         </div>
