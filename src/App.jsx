@@ -1,64 +1,28 @@
 import React, { useState } from 'react';
 import Deck from './components/Deck/Deck';
+import './index.css'
 
 function App() {
   const [userInput, setUserInput] = useState('');
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+    <div className="w-screen h-screen flex">
       {/* Left Half - Question and Input */}
-      <div style={{ 
-        flex: '1',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '10vh 5vw',
-        fontFamily: '"Cormorant Garamond", serif'
-      }}>
-        <h1 style={{ 
-          fontSize: '48px',
-          fontWeight: '300',
-          marginBottom: '4vh',
-          color: '#333',
-          lineHeight: '1.2'
-        }}>
-          what do you see?
-        </h1>
+      <div className="flex-1 flex flex-col p-[10vh_5vw] font-['Cormorant_Garamond']">
         
         <textarea
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          style={{
-            width: '100%',
-            minHeight: '200px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '1px solid #ddd',
-            fontSize: '24px',
-            lineHeight: '1.6',
-            fontFamily: 'inherit',
-            resize: 'none',
-            outline: 'none',
-            color: '#444',
-            padding: '1rem 0'
-          }}
-          placeholder="write your vision..."
+          className="w-full min-h-[600px] mt-56 bg-transparent border-0 
+                     text-6xl leading-none font-inherit resize-none outline-none 
+                     text-gray-600 py-4 placeholder:text-gray-400"
+          placeholder="what do you see?"
         />
       </div>
 
       {/* Deck Section - Right Half */}
-      <div style={{ 
-        flex: '1', 
-        position: 'relative',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ 
-          position: 'relative',
-          width: '300px',
-          height: '450px'
-        }}>
+      <div className="flex-1 relative h-screen flex items-center justify-center">
+        <div className="relative w-[300px] h-[450px]">
           <Deck />
         </div>
       </div>
@@ -67,9 +31,3 @@ function App() {
 }
 
 export default App;
-
-
-
-// Whispering soft winds
-// Petals fall on quiet streams
-// Sunset blushes gold
