@@ -12,10 +12,12 @@
   "dependencies": {
     "@react-spring/web": "^9.7.5",
     "@use-gesture/react": "^10.3.1",
+    "axios": "^1.7.9",
     "lodash": "^4.17.21",
     "openai": "^4.68.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-toastify": "^11.0.0",
     "use-scramble": "^2.2.15"
   },
   "devDependencies": {

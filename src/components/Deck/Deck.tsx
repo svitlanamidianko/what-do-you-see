@@ -1,33 +1,44 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSprings, animated, to as interpolate } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
 import styles from './styles.module.css'
 
-const cards = [
-  'https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_06_Lovers.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/RWS_Tarot_02_High_Priestess.jpg/690px-RWS_Tarot_02_High_Priestess.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg',
-]
-
-const to = (i: number) => ({
-  x: 0,
-  y: i * -8,
-  scale: 1,
-  rot: -10 + Math.random() * 20,
-  delay: i * 100,
-})
-
-const from = (_i: number) => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
-
-const trans = (r: number, s: number) =>
-  `perspective(1000px) rotateX(5deg) rotateY(${r / 20}deg) rotateZ(${r}deg) scale(${s})`
-
 function Deck() {
+  const CARDS_TO_SHOW = 5  // Constant for number of cards to show
+  const [cards, setCards] = useState<string[]>([])
   const [gone] = useState(() => new Set())
-  const [props, api] = useSprings(cards.length, i => ({
+
+  const getRandomCards = (array: string[], count: number) => {
+    const shuffled = [...array].sort(() => 0.5 - Math.random())
+    return shuffled.slice(0, count)
+  }
+
+  useEffect(() => {
+    console.log('Fetching cards...')
+    fetch('http://localhost:7777/api/cards')
+      .then(response => response.json())
+      .then(cardUrls => {
+        // Debug what we're receiving from the backend
+        console.log('Raw response from server:', cardUrls);
+        console.log('Type of cardUrls:', typeof cardUrls);
+        
+        // Make sure cardUrls is an array
+        const urlsArray = Array.isArray(cardUrls) ? cardUrls : Object.values(cardUrls);
+        console.log('Processed array:', urlsArray);
+        
+        const randomCardUrls = getRandomCards(urlsArray, CARDS_TO_SHOW);
+        const fullUrls = randomCardUrls.map((url: string) => {
+          const cleanUrl = url.replace('/api', '');
+          return `http://localhost:7777/api/${cleanUrl}`;
+        });
+        console.log('Final URLs:', fullUrls);
+        setCards(fullUrls);
+      })
+      .catch(error => console.error('Error fetching cards:', error));
+  }, []);
+
+  // Only create springs for the number of cards we have
+  const [props, api] = useSprings(Math.min(cards.length, CARDS_TO_SHOW), i => ({
     ...to(i),
     from: from(i),
   }))
@@ -56,7 +67,7 @@ function Deck() {
       }
     })
 
-    if (!active && gone.size === cards.length) {
+    if (!active && gone.size === CARDS_TO_SHOW) {
       setTimeout(() => {
         gone.clear()
         api.start(i => to(i))
@@ -64,6 +75,9 @@ function Deck() {
     }
   })
 
+  if (cards.length === 0) return null
+
+  // Only render 5 cards
   return (
     <>
       {props.map(({ x, y, rot, scale }, i) => (
@@ -80,5 +94,18 @@ function Deck() {
     </>
   )
 }
+
+const to = (i: number) => ({
+  x: 0,
+  y: i * -8,
+  scale: 1,
+  rot: -10 + Math.random() * 20,
+  delay: i * 100,
+})
+
+const from = (_i: number) => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
+
+const trans = (r: number, s: number) =>
+  `perspective(1000px) rotateX(5deg) rotateY(${r / 20}deg) rotateZ(${r}deg) scale(${s})`
 
 export default Deck

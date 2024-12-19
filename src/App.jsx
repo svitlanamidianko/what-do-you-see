@@ -1,73 +1,62 @@
 import React, { useState } from 'react';
 import Deck from './components/Deck/Deck';
 import backgroundImage from './assets/japanese gradients/O.png';
+import axios from 'axios';
+import './App.css';
+import { ToastContainer, toast } from 'react-toastify';
+
 
 function App() {
   const [userInput, setUserInput] = useState('');
+  const notifyInput = () =>  toast(`hey u, thanks for your input:) : ${userInput}`);
+  const notifyNone = (errorMsg) => toast(`
+    hey u, nothing was submitted:)
+    Error: ${errorMsg}
+  `);
 
   return (
-    <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      display: 'flex',
-      backgroundImage: `url(${backgroundImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center'
-    }}>
+    <div 
+      className="app-container" 
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
       {/* Left Half - Question and Input */}
-      <div style={{ 
-        flex: '1',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '10vh 5vw',
-        fontFamily: '"Cormorant Garamond", serif'
-      }}>
-        <h1 style={{ 
-          fontSize: '64px',
-          fontWeight: '300',
-          marginBottom: '4vh',
-          color: '#333',
-          lineHeight: '1.2',
-          fontFamily: '"Libre Baskerville", serif'
-        }}>
+      <div className="left-half">
+        <h1 className="title">
           what do you see?
         </h1>
-        
+
+        <button
+          className="submit-button"
+          onClick={() => {
+            axios.post('http://localhost:7777/createuserentry', {"entry": userInput})
+              .then(response => {
+                console.log(response)
+                notifyInput()
+                setUserInput("");
+              })
+              .catch(err => {
+                console.log(err)
+                notifyNone(err.response.data.message)
+              });
+          }}
+        >
+          fancy im done button
+        </button>
+        <ToastContainer />
+
         <textarea
+          className="input-textarea"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          style={{
-            width: '100%',
-            minHeight: '200px',
-            background: 'transparent',
-            border: 'none',
-            fontSize: '28px',
-            lineHeight: '1.6',
-            fontFamily: '"Libre Baskerville", serif',
-            resize: 'none',
-            outline: 'none',
-            color: '#666',
-            padding: '1rem 0'
-          }}
         />
-      </div>
 
+
+
+      </div>
+      
       {/* Deck Section - Right Half */}
-      <div style={{ 
-        flex: '1', 
-        position: 'relative',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ 
-          position: 'relative',
-          width: '600px',
-          height: '900px',
-          transform: 'scale(0.6)',
-          transformOrigin: 'center center'
-        }}>
+      <div className="deck-section">
+        <div className="deck-container">
           <Deck />
         </div>
       </div>

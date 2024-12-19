@@ -5,6 +5,79 @@
   text-align: center;
 }
 
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  background-size: cover;
+  background-position: center;
+}
+
+.left-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10vh 5vw;
+  font-family: "Cormorant Garamond", serif;
+}
+
+.title {
+  font-size: 64px;
+  font-weight: 300;
+  margin-bottom: 4vh;
+  color: #333;
+  line-height: 1.2;
+  font-family: "Libre Baskerville", serif;
+}
+
+.submit-button {
+  padding: 12px 24px;
+  font-size: 20px;
+  background: transparent;
+  border: 1px solid #666;
+  color: #666;
+  font-family: "Libre Baskerville", serif;
+  cursor: pointer;
+  margin-bottom: 2vh;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.submit-button:hover {
+  background: rgba(102, 102, 102, 0.1);
+}
+
+.input-textarea {
+  width: 100%;
+  min-height: 200px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1.6;
+  font-family: "Libre Baskerville", serif;
+  resize: none;
+  outline: none;
+  color: #666;
+  padding: 1rem 0;
+}
+
+.deck-section {
+  flex: 1;
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-container {
+  position: relative;
+  width: 600px;
+  height: 900px;
+  transform: scale(0.6);
+  transform-origin: center center;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
