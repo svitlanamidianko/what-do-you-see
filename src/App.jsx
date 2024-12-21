@@ -9,8 +9,8 @@ import { ToastContainer, toast } from 'react-toastify';
 function App() {
   const [userInput, setUserInput] = useState('');
   const notifyInput = () =>  toast(`hey u, thanks for your input:) : ${userInput}`);
-  const notifyNone = (errorMsg) => toast(`
-    hey u, nothing was submitted:)
+  const notifyMsg = (errorMsg) => toast(`
+    Here what you submitted: ${userInput}
     Error: ${errorMsg}
   `);
 
@@ -28,7 +28,7 @@ function App() {
         <button
           className="submit-button"
           onClick={() => {
-            axios.post('http://localhost:7777/createuserentry', {"entry": userInput})
+            axios.post('http://localhost:7777/api/createuserentry', {"entry": userInput})
               .then(response => {
                 console.log(response)
                 notifyInput()
@@ -36,7 +36,10 @@ function App() {
               })
               .catch(err => {
                 console.log(err)
-                notifyNone(err.response.data.message)
+                const errorMessage = err.message === 'Network Error' 
+                  ? 'Unable to connect to the server. Please make sure the server is running.'
+                  : err.response?.data?.message || 'An unexpected error occurred';
+                notifyMsg(errorMessage);
               });
           }}
         >
