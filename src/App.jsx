@@ -28,7 +28,8 @@ function App() {
         <button
           className="submit-button"
           onClick={() => {
-            axios.post('http://localhost:7777/api/createuserentry', {"entry": userInput})
+            axios.post('http://localhost:7777/api/createuserentry', 
+              {"entry": userInput})
               .then(response => {
                 console.log(response)
                 notifyInput()
