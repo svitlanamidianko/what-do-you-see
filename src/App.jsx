@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Deck from './components/Deck/Deck';
 import backgroundImage from './assets/japanese gradients/O.png';
 import axios from 'axios';
@@ -8,11 +8,19 @@ import { ToastContainer, toast } from 'react-toastify';
 
 function App() {
   const [userInput, setUserInput] = useState('');
+  const [currentGameId] = useState('game123');
+  const [currentCardId, setCurrentCardId] = useState('');
+  const userId = 'user123';
   const notifyInput = () =>  toast(`hey u, thanks for your input:) : ${userInput}`);
   const notifyMsg = (errorMsg) => toast(`
     Here what you submitted: ${userInput}
     Error: ${errorMsg}
   `);
+
+  const handleCardChange = useCallback((cardId) => {
+    setCurrentCardId(cardId);
+    console.log('Current card ID:', cardId);
+  }, []);
 
   return (
     <div 
@@ -28,8 +36,12 @@ function App() {
         <button
           className="submit-button"
           onClick={() => {
-            axios.post('http://localhost:7777/api/createuserentry', 
-              {"entry": userInput})
+            axios.post('http://localhost:7777/api/createuserentry', {
+              entry: userInput,
+              user_id: userId,
+              game_id: currentGameId,
+              card_id: currentCardId
+            })
               .then(response => {
                 console.log(response)
                 notifyInput()
@@ -61,7 +73,7 @@ function App() {
       {/* Deck Section - Right Half */}
       <div className="deck-section">
         <div className="deck-container">
-          <Deck />
+          <Deck onCardChange={handleCardChange} />
         </div>
       </div>
     </div>

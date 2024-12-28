@@ -3,12 +3,19 @@ import { useSprings, animated, to as interpolate } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
 import styles from './styles.module.css'
 
-function Deck() {
-  const CARDS_TO_SHOW = 5  // Constant for number of cards to show
-  const [cards, setCards] = useState<string[]>([])
+// Add interface for card structure
+interface Card {
+  id: string;
+  image_path: string;
+  name: string;
+}
+
+function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
+  const CARDS_TO_SHOW = 5
+  const [cards, setCards] = useState<Card[]>([])
   const [gone] = useState(() => new Set())
 
-  const getRandomCards = (array: string[], count: number) => {
+  const getRandomCards = (array: Card[], count: number) => {
     const shuffled = [...array].sort(() => 0.5 - Math.random())
     return shuffled.slice(0, count)
   }
@@ -17,28 +24,26 @@ function Deck() {
     console.log('Fetching cards...')
     fetch('http://localhost:7777/api/cards')
       .then(response => response.json())
-      .then(cardUrls => {
-        // Debug what we're receiving from the backend
-        console.log('Raw response from server:', cardUrls);
-        console.log('Type of cardUrls:', typeof cardUrls);
+      .then(cardsData => {
+        const cardsArray = Array.isArray(cardsData) ? cardsData : Object.values(cardsData);
+        const randomCards = getRandomCards(cardsArray, CARDS_TO_SHOW);
+        const processedCards = randomCards.map((card: Card) => ({
+          ...card,
+          image_path: `http://localhost:7777/api/cards/${encodeURI(card.image_path.split('/').pop() || '')}`
+        }));
         
-        // Make sure cardUrls is an array
-        const urlsArray = Array.isArray(cardUrls) ? cardUrls : Object.values(cardUrls);
-        console.log('Processed array:', urlsArray);
+        console.log('Final processed cards:', processedCards);
+        setCards(processedCards);
         
-        const randomCardUrls = getRandomCards(urlsArray, CARDS_TO_SHOW);
-        const fullUrls = randomCardUrls.map((url: string) => {
-          const cleanUrl = url.replace('/api', '');
-          return `http://localhost:7777/api/${cleanUrl}`;
-        });
-        console.log('Final URLs:', fullUrls);
-        setCards(fullUrls);
+        if (onCardChange && processedCards.length > 0) {
+          onCardChange(processedCards[processedCards.length - 1].id);
+        }
       })
       .catch(error => console.error('Error fetching cards:', error));
-  }, []);
+  }, [onCardChange]);
 
-  // Only create springs for the number of cards we have
-  const [props, api] = useSprings(Math.min(cards.length, CARDS_TO_SHOW), i => ({
+  // Create springs AFTER we have cards
+  const [props, api] = useSprings(cards.length, i => ({
     ...to(i),
     from: from(i),
   }))
@@ -77,21 +82,48 @@ function Deck() {
 
   if (cards.length === 0) return null
 
-  // Only render 5 cards
   return (
-    <>
+    <div className={styles.container} style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden'
+    }}>
       {props.map(({ x, y, rot, scale }, i) => (
-        <animated.div className={styles.deck} key={i} style={{ x, y }}>
+        <animated.div 
+          className={styles.deck} 
+          key={i} 
+          style={{ 
+            x, 
+            y,
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            willChange: 'transform',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+          }}
+        >
           <animated.div
             {...bind(i)}
             style={{
               transform: interpolate([rot, scale], trans),
-              backgroundImage: `url(${cards[i]})`,
+              backgroundImage: `url(${cards[i].image_path})`,
+              backgroundColor: 'white',
+              backgroundSize: '100% 100%',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              width: '300px',
+              height: '450px',
+              borderRadius: '10px',
+              boxShadow: '0 12.5px 100px -10px rgba(50, 50, 73, 0.4), 0 10px 10px -10px rgba(50, 50, 73, 0.3)',
             }}
           />
         </animated.div>
       ))}
-    </>
+    </div>
   )
 }
 
