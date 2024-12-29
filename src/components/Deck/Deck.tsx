@@ -18,6 +18,7 @@ interface DeckProps {
 // Export this interface
 export interface DeckHandle {
   triggerSwipe: (direction?: number) => void;
+  getCardCount: () => number;
 }
 
 function Deck({ onCardChange, onSwipeComplete }: DeckProps, ref: React.Ref<DeckHandle>) {
@@ -156,6 +157,9 @@ function Deck({ onCardChange, onSwipeComplete }: DeckProps, ref: React.Ref<DeckH
           }
         })
       }
+    },
+    getCardCount: () => {
+      return cards.length - gone.size;
     }
   }))
 

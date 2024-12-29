@@ -220,3 +220,29 @@ label {
   padding: 1rem 0;
   margin: 0;
 }
+
+.collective-button {
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+  text-decoration: none;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.fly-button-image {
+  width: 300px;
+  height: auto;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.collective-button:hover .fly-button-image {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.collective-button:active .fly-button-image {
+  transform: scale(0.95);
+}
