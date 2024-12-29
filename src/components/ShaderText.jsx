@@ -28,36 +28,56 @@ const fragmentShader = `
   }
 `;
 
+function hexToRGB(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  return [r, g, b];
+}
+
+function rgbToHex(rgb) {
+  const toHex = (x) => {
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `#${toHex(rgb[0])}${toHex(rgb[1])}${toHex(rgb[2])}`;
+}
+
 function ShaderText({ text, className }) {
+  const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const textId = `text-mask-${Math.random().toString(36).substr(2, 9)}`;
   
-  // Add controls state
-  const [controls, setControls] = useState({
-    speed: 1.0,
-    bands: 20.0,
-    colorMix: 0.5,
-    color1: [0.4, 0.3, 0.5], // purple
-    color2: [0.3, 0.4, 0.2], // green
+  const [controls] = useState({
+    speed: 3.1,
+    bands: 37.0,
+    colorMix: 0.44,
+    color1: [0.549, 0.357, 0.682],
+    color2: [0.694, 0.678, 0.776],
+    fontFamily: 'fantasy',
+    fontWeight: 300,
+    fontStyle: 'normal'
   });
 
   useEffect(() => {
+    const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !container) return;
 
     const gl = canvas.getContext('webgl');
     if (!gl) return;
 
     const updateSize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight * 0.4; // Increased height
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      gl.viewport(0, 0, canvas.width, canvas.height);
     };
     updateSize();
 
     const program = createShaderProgram(gl, vertexShader, fragmentShader);
+    if (!program) return;
+    
     gl.useProgram(program);
 
     const vertices = new Float32Array([
@@ -103,85 +123,70 @@ function ShaderText({ text, className }) {
     return () => {
       window.removeEventListener('resize', updateSize);
       cancelAnimationFrame(animationFrameId);
+      gl.deleteProgram(program);
     };
   }, [controls]);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <svg style={{ position: 'absolute', width: '100%', height: '100%' }}>
-        <defs>
-          <mask id={textId}>
-            <text
-              x="50%"
-              y="50%"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="6rem"
-              fontWeight="bold"
-              fill="white"
-              fontFamily="serif"
-            >
-              {text}
-            </text>
-          </mask>
-        </defs>
-      </svg>
+    <div 
+      ref={containerRef}
+      style={{ 
+        position: 'relative',
+        width: '100%',
+        height: '180px',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        overflow: 'hidden',
+        paddingLeft: '2rem',
+        marginTop: '-2rem'
+      }}
+    >
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <svg 
+          width="100%"
+          height="100%"
+          style={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none'
+          }}
+        >
+          <defs>
+            <mask id={textId}>
+              <rect width="100%" height="100%" fill="black" />
+              <text
+                x="0"
+                y="80px"
+                textAnchor="start"
+                dominantBaseline="middle"
+                fontSize="96px"
+                fill="white"
+                fontFamily={controls.fontFamily}
+                style={{
+                  fontWeight: controls.fontWeight,
+                  fontStyle: controls.fontStyle
+                }}
+              >
+                {text}
+              </text>
+            </mask>
+          </defs>
+        </svg>
 
-      <canvas
-        ref={canvasRef}
-        className={className}
-        style={{
-          width: '100%',
-          height: '40vh',
-          maskImage: `url(#${textId})`,
-          WebkitMaskImage: `url(#${textId})`,
-        }}
-      />
-
-      {/* Simple Control Panel */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        background: 'rgba(0,0,0,0.7)',
-        padding: '20px',
-        borderRadius: '10px',
-        color: 'white',
-        zIndex: 1000
-      }}>
-        <div>
-          <label>Speed: {controls.speed.toFixed(1)}</label>
-          <input
-            type="range"
-            min="0"
-            max="5"
-            step="0.1"
-            value={controls.speed}
-            onChange={(e) => setControls({...controls, speed: parseFloat(e.target.value)})}
-          />
-        </div>
-        <div>
-          <label>Bands: {controls.bands.toFixed(1)}</label>
-          <input
-            type="range"
-            min="1"
-            max="50"
-            step="0.5"
-            value={controls.bands}
-            onChange={(e) => setControls({...controls, bands: parseFloat(e.target.value)})}
-          />
-        </div>
-        <div>
-          <label>Color Mix: {controls.colorMix.toFixed(2)}</label>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={controls.colorMix}
-            onChange={(e) => setControls({...controls, colorMix: parseFloat(e.target.value)})}
-          />
-        </div>
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            mask: `url(#${textId})`,
+            WebkitMask: `url(#${textId})`
+          }}
+        />
       </div>
     </div>
   );
@@ -190,6 +195,7 @@ function ShaderText({ text, className }) {
 function createShaderProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+  if (!vertexShader || !fragmentShader) return null;
 
   const program = gl.createProgram();
   gl.attachShader(program, vertexShader);
@@ -197,7 +203,7 @@ function createShaderProgram(gl, vsSource, fsSource) {
   gl.linkProgram(program);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
+    console.error('Unable to initialize the shader program:', gl.getProgramInfoLog(program));
     return null;
   }
 
@@ -210,7 +216,7 @@ function loadShader(gl, type, source) {
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+    console.error('An error occurred compiling the shaders:', gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
