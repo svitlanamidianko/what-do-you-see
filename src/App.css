@@ -37,8 +37,9 @@ body {
   flex-direction: column;
   gap: 2rem;
   padding: 10vh 5vw;
-  height: 100%;  /* Add this to ensure full height */
+  height: 100vh;  /* Changed to viewport height */
   font-family: "Cormorant Garamond", serif;
+  position: relative;  /* Add this for absolute positioning */
 }
 
 .title {
@@ -47,27 +48,42 @@ body {
 }
 
 .submit-button {
-  padding: 12px 24px;
-  font-size: 20px;
-  background: transparent;
-  border: 1px solid #666;
-  color: #666;
-  font-family: "Libre Baskerville", serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  margin-bottom: 2vh;
-  transition: all 0.2s ease;
-  width: fit-content;
+  outline: none;
+  opacity: 0.5;
+  align-self: flex-start;
+  margin-left: -2rem;
+  position: absolute;
+  left: 0;
+  bottom: -2rem;
 }
 
-.submit-button:hover {
-  background: rgba(102, 102, 102, 0.1);
+.submit-button:focus {
+  outline: none;  /* Ensure outline is removed on focus state */
+}
+
+.submit-button img {
+  max-width: 300px;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+.submit-button:hover img {
+  transform: scale(1.1);
+}
+
+.submit-button:active img {
+  transform: scale(0.9);
 }
 
 .input-textarea {
   width: 100%;
-  flex: 1;  /* Make textarea fill available space */
-  min-height: 200px;  /* Keep this as minimum height */
-  height: 100%;  /* Add this to ensure full height */
+  flex: 1.5;  /* Increased from 1 to 1.5 to make textarea larger */
+  min-height: 300px;  /* Increased from 200px to 300px */
+  height: 100%;
   background: transparent;
   border: none;
   font-size: 28px;
@@ -173,8 +189,9 @@ body {
   width: 100%;
   margin: 0;
   padding: 0;
-  flex: 1;  /* Add this to make it fill available space */
-  height: 100%;  /* Add this to ensure full height */
+  flex: 1;
+  height: 100%;
+  position: relative;
 }
 
 .shader-text {

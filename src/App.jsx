@@ -7,13 +7,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import ShaderText from './components/ShaderText';
 import InputControls from './components/InputControls';
 import './components/InputControls.css';
+import flyButton from './assets/fly on button.png';
 
 function App() {
   const [userInput, setUserInput] = useState('');
   const [currentGameId] = useState('game123');
   const [currentCardId, setCurrentCardId] = useState('');
   const userId = 'user123';
-  const notifyInput = () =>  toast(`hey u, thanks for your input:) : ${userInput}`);
   const notifyMsg = (errorMsg) => toast(`
     Here what you submitted: ${userInput}
     Error: ${errorMsg}
@@ -51,11 +51,12 @@ function App() {
         game_id: currentGameId,
         card_id: currentCardId
       });
-      notifyInput();
       setUserInput("");
       
-      // Trigger the next card using the ref
-      deckRef.current?.triggerSwipe();
+      setTimeout(() => {
+        deckRef.current?.triggerSwipe();
+      }, 800);
+      
     } catch (err) {
       console.log(err);
       const errorMessage = err.message === 'Network Error' 
@@ -65,9 +66,9 @@ function App() {
     } finally {
       setTimeout(() => {
         setIsSubmitting(false);
-      }, 300);
+      }, 1200);
     }
-  }, [userInput, userId, currentGameId, currentCardId, notifyInput, notifyMsg, isSubmitting]);
+  }, [userInput, userId, currentGameId, currentCardId, notifyMsg, isSubmitting]);
 
   // Add handler for Enter key
   const handleKeyPress = useCallback((e) => {
@@ -113,7 +114,7 @@ function App() {
             className="submit-button"
             onClick={handleSubmission}
           >
-            fancy im done button
+            <img src={flyButton} alt="Submit" />
           </button>
         </div>
       </div>
