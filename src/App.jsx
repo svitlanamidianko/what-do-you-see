@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Deck from './components/Deck/Deck';
 import backgroundImage from './assets/japanese gradients/O.png';
 import axios from 'axios';
@@ -24,6 +24,8 @@ function App() {
     color: '#666666',
     fontWeight: 400
   });
+  const deckRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCardChange = useCallback((cardId) => {
     setCurrentCardId(cardId);
@@ -36,6 +38,48 @@ function App() {
       [setting]: value
     }));
   };
+
+  const handleSubmission = useCallback(async () => {
+    if (!userInput.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      await axios.post('http://localhost:7777/api/createuserentry', {
+        entry: userInput,
+        user_id: userId,
+        game_id: currentGameId,
+        card_id: currentCardId
+      });
+      notifyInput();
+      setUserInput("");
+      
+      // Trigger the next card using the ref
+      deckRef.current?.triggerSwipe();
+    } catch (err) {
+      console.log(err);
+      const errorMessage = err.message === 'Network Error' 
+        ? 'Unable to connect to the server. Please make sure the server is running.'
+        : err.response?.data?.message || 'An unexpected error occurred';
+      notifyMsg(errorMessage);
+    } finally {
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 300);
+    }
+  }, [userInput, userId, currentGameId, currentCardId, notifyInput, notifyMsg, isSubmitting]);
+
+  // Add handler for Enter key
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // Prevent default enter behavior
+      handleSubmission();
+    }
+  }, [handleSubmission]);
+
+  const handleSwipeComplete = useCallback(() => {
+    handleSubmission();
+  }, [handleSubmission]);
 
   return (
     <div 
@@ -55,6 +99,7 @@ function App() {
             className="input-textarea"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={handleKeyPress}
             placeholder="i see ..."
             style={{
               fontSize: `${inputSettings.fontSize}px`,
@@ -66,26 +111,7 @@ function App() {
 
           <button
             className="submit-button"
-            onClick={() => {
-              axios.post('http://localhost:7777/api/createuserentry', {
-                entry: userInput,
-                user_id: userId,
-                game_id: currentGameId,
-                card_id: currentCardId
-              })
-                .then(response => {
-                  console.log(response)
-                  notifyInput()
-                  setUserInput("");
-                })
-                .catch(err => {
-                  console.log(err)
-                  const errorMessage = err.message === 'Network Error' 
-                    ? 'Unable to connect to the server. Please make sure the server is running.'
-                    : err.response?.data?.message || 'An unexpected error occurred';
-                  notifyMsg(errorMessage);
-                });
-            }}
+            onClick={handleSubmission}
           >
             fancy im done button
           </button>
@@ -95,7 +121,11 @@ function App() {
       {/* Deck Section - Right Half */}
       <div className="deck-section">
         <div className="deck-container">
-          <Deck onCardChange={handleCardChange} />
+          <Deck 
+            ref={deckRef}
+            onCardChange={handleCardChange} 
+            onSwipeComplete={handleSwipeComplete}
+          />
         </div>
       </div>
     </div>

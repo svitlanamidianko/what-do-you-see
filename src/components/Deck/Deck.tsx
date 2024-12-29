@@ -1,19 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react'
 import { useSprings, animated, to as interpolate } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
 import styles from './styles.module.css'
 
-// Add interface for card structure
+// Move interfaces to the top
 interface Card {
   id: string;
   image_path: string;
   name: string;
 }
 
-function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
+interface DeckProps {
+  onCardChange?: (cardId: string) => void;
+  onSwipeComplete?: () => void;
+}
+
+// Export this interface
+export interface DeckHandle {
+  triggerSwipe: (direction?: number) => void;
+}
+
+function Deck({ onCardChange, onSwipeComplete }: DeckProps, ref: React.Ref<DeckHandle>) {
   const CARDS_TO_SHOW = 5
   const [cards, setCards] = useState<Card[]>([])
   const [gone] = useState(() => new Set())
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const getRandomCards = (array: Card[], count: number) => {
     const shuffled = [...array].sort(() => 0.5 - Math.random())
@@ -49,36 +60,104 @@ function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
   }))
 
   const bind = useDrag(({ args: [index], active, movement: [mx], direction: [xDir], velocity }) => {
+    if (isAnimating) return
+    
     const trigger = Math.abs(mx) > 100 || velocity > 0.2
     const dir = xDir < 0 ? -1 : 1
     
     if (!active && trigger) {
+      setIsAnimating(true)
       gone.add(index)
-    }
-    
-    api.start(i => {
-      if (index !== i) return
-      const isGone = gone.has(index)
-      const x = isGone ? (200 + window.innerWidth) * dir : active ? mx : 0
-      const rot = mx / 100 + (isGone ? dir * 10 * velocity : 0)
-      const scale = active ? 1.1 : 1
       
-      return {
-        x,
-        rot,
-        scale,
-        delay: undefined,
-        config: { friction: 50, tension: active ? 800 : isGone ? 200 : 500 },
+      // Trigger submission immediately when swipe threshold is met
+      if (onSwipeComplete) {
+        onSwipeComplete()
       }
-    })
+      
+      // Update current card ID for the next card
+      if (onCardChange && cards[index - 1]) {
+        onCardChange(cards[index - 1].id);
+      }
 
-    if (!active && gone.size === CARDS_TO_SHOW) {
+      api.start(i => {
+        if (index !== i) return
+        const isGone = gone.has(index)
+        const x = isGone ? (200 + window.innerWidth) * dir : active ? mx : 0
+        const rot = mx / 100 + (isGone ? dir * 10 * velocity : 0)
+        const scale = active ? 1.1 : 1
+        
+        return {
+          x,
+          rot,
+          scale,
+          delay: undefined,
+          config: { friction: 50, tension: active ? 800 : isGone ? 200 : 500 },
+          onRest: () => {
+            setIsAnimating(false)  // Only reset animation flag after animation completes
+          }
+        }
+      })
+    } else {
+      // Handle active dragging
+      api.start(i => {
+        if (index !== i) return
+        const x = active ? mx : 0
+        const rot = active ? mx / 100 : 0
+        const scale = active ? 1.1 : 1
+        
+        return {
+          x,
+          rot,
+          scale,
+          delay: undefined,
+          config: { friction: 50, tension: active ? 800 : 500 },
+        }
+      })
+    }
+
+    if (!active && gone.size === cards.length) {
       setTimeout(() => {
         gone.clear()
         api.start(i => to(i))
       }, 600)
     }
   })
+
+  // Expose the swipe trigger function
+  useImperativeHandle(ref, () => ({
+    triggerSwipe: (direction = 1) => {
+      if (isAnimating) return
+      
+      const nextIndex = cards.length - gone.size - 1
+      if (nextIndex >= 0) {
+        setIsAnimating(true)
+        gone.add(nextIndex)
+        
+        // Trigger submission immediately
+        if (onSwipeComplete) {
+          onSwipeComplete()
+        }
+        
+        if (onCardChange && cards[nextIndex - 1]) {
+          onCardChange(cards[nextIndex - 1].id)
+        }
+
+        api.start(i => {
+          if (i !== nextIndex) return
+          return {
+            x: (200 + window.innerWidth) * direction,
+            rot: direction * 10,
+            scale: 0,
+            delay: undefined,
+            config: { friction: 50, tension: 200 },
+            onRest: () => {
+              setIsAnimating(false)
+            }
+          }
+        })
+      }
+    }
+  }))
 
   if (cards.length === 0) return null
 
@@ -140,4 +219,4 @@ const from = (_i: number) => ({ x: 0, rot: 0, scale: 1.5, y: -1000 })
 const trans = (r: number, s: number) =>
   `perspective(1000px) rotateX(5deg) rotateY(${r / 20}deg) rotateZ(${r}deg) scale(${s})`
 
-export default Deck
+export default forwardRef(Deck);
