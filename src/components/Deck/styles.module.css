@@ -1,5 +1,4 @@
 .container {
-  background: lightblue;
   cursor: url('https://uploads.codesandbox.io/uploads/user/b3e56831-8b98-4fee-b941-0e27f39883ab/Ad1_-cursor.png') 39 39, auto;
   display: flex;
   align-items: center;
@@ -9,8 +8,8 @@
 
 .deck {
   position: absolute;
-  width: 600px;
-  height: 900px;
+  width: 1200px;
+  height: 1800px;
   will-change: transform;
   display: flex;
   align-items: center;

@@ -87,7 +87,7 @@ function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
       position: 'relative',
       width: '100%',
       height: '100%',
-      overflow: 'hidden'
+      overflow: 'visible'
     }}>
       {props.map(({ x, y, rot, scale }, i) => (
         <animated.div 
@@ -103,7 +103,7 @@ function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden'
+            overflow: 'visible'
           }}
         >
           <animated.div
@@ -115,8 +115,8 @@ function Deck({ onCardChange }: { onCardChange?: (cardId: string) => void }) {
               backgroundSize: '100% 100%',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
-              width: '300px',
-              height: '450px',
+              width: '600px',
+              height: '900px',
               borderRadius: '10px',
               boxShadow: '0 12.5px 100px -10px rgba(50, 50, 73, 0.4), 0 10px 10px -10px rgba(50, 50, 73, 0.3)',
             }}
