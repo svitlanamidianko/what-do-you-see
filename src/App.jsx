@@ -5,6 +5,8 @@ import axios from 'axios';
 import './App.css';
 import { ToastContainer, toast } from 'react-toastify';
 import ShaderText from './components/ShaderText';
+import InputControls from './components/InputControls';
+import './components/InputControls.css';
 
 function App() {
   const [userInput, setUserInput] = useState('');
@@ -16,11 +18,24 @@ function App() {
     Here what you submitted: ${userInput}
     Error: ${errorMsg}
   `);
+  const [inputSettings, setInputSettings] = useState({
+    fontSize: 76,
+    fontFamily: 'Papyrus',
+    color: '#666666',
+    fontWeight: 400
+  });
 
   const handleCardChange = useCallback((cardId) => {
     setCurrentCardId(cardId);
     console.log('Current card ID:', cardId);
   }, []);
+
+  const handleSettingsChange = (setting, value) => {
+    setInputSettings(prev => ({
+      ...prev,
+      [setting]: value
+    }));
+  };
 
   return (
     <div 
@@ -40,6 +55,13 @@ function App() {
             className="input-textarea"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
+            placeholder="i see ..."
+            style={{
+              fontSize: `${inputSettings.fontSize}px`,
+              fontFamily: inputSettings.fontFamily,
+              color: inputSettings.color,
+              fontWeight: inputSettings.fontWeight
+            }}
           />
 
           <button

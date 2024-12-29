@@ -137,9 +137,7 @@ function ShaderText({ text, className }) {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
-        overflow: 'hidden',
-        paddingLeft: '2rem',
-        marginTop: '-2rem'
+        overflow: 'hidden'
       }}
     >
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
