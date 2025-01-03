@@ -109,13 +109,14 @@ function App() {
   }, [handleSubmission]);
 
   return (
-    <>
-      <Routes>
-        <Route path="/" element={
-          <div 
+    <div 
             className="app-container" 
             style={{ backgroundImage: `url(${backgroundImage})` }}
           >
+      <Routes>
+        <Route path="/" element={
+          
+            <>
             {/* Left Half - Question and Input */}
             <div className="left-half">
               <div className="title-section">
@@ -168,11 +169,14 @@ function App() {
                 <img src={flyButton} alt="Take me to collective view" className="fly-button-image" />
               </Link>
             )}
-          </div>
+            
+            </>
+            
+        
         } />
         <Route path="/collective/:gameId" element={<CollectiveView />} />
       </Routes>
-    </>
+    </div>
   );
 }
 
