@@ -156,6 +156,8 @@ const CollectiveView = () => {
   const [centralAttractorState, setCentralAttractorState] = useState(null);
   const [cycleCount, setCycleCount] = useState(0);
   const cycleTimerRef = useRef(null);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // 1. Fetch data
   useEffect(() => {
@@ -371,39 +373,114 @@ const CollectiveView = () => {
     cardsDataLength: cardsData.length
   });
 
-  return (
-    <div className="fixed inset-0 w-full h-full ">
-      <div ref={sceneRef} className="w-full h-full absolute inset-0 z-10" />
-      
-      {centralAttractorState && cardsData.length > 0 && (
-        <div className="absolute inset-0 z-20 pointer-events-none">
-          <CentralCard
-            position={centralAttractorState.position}
-            dimensions={centralAttractorState.dimensions}
-            image={cardsData[0].image_url}
-          />
-          {console.log('Rendering CentralCard with:', {
-            position: centralAttractorState.position,
-            dimensions: centralAttractorState.dimensions,
-            image: cardsData[0].image_url
-          })}
-        </div>
-      )}
+  // Add scroll handler
+  useEffect(() => {
+    const handleScroll = (e) => {
+      if (isTransitioning || !cardsData.length) return;
 
+      // Determine scroll direction
+      const scrollDown = e.deltaY > 0;
+      
+      if (scrollDown) {
+        setIsTransitioning(true);
+        setCurrentCardIndex((prevIndex) => {
+          const nextIndex = (prevIndex + 1) % cardsData.length;
+          
+          // Update Matter.js bodies with new entries
+          if (rectanglesRef.current) {
+            const newEntries = cardsData[nextIndex].entries;
+            rectanglesRef.current.forEach((rect, i) => {
+              if (newEntries[i]) {
+                rect.entry.text = newEntries[i].entry_text;
+              }
+            });
+          }
+          
+          return nextIndex;
+        });
+
+        // Reset transition lock after animation
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500);
+      }
+    };
+
+    window.addEventListener('wheel', handleScroll);
+    return () => window.removeEventListener('wheel', handleScroll);
+  }, [cardsData.length, isTransitioning]);
+
+  // Modify the central card render to show the stack
+  const renderCardStack = () => {
+    if (!centralAttractorState || !cardsData.length) return null;
+
+    return (
       <div className="absolute inset-0 z-20 pointer-events-none">
-        {rectangleStates.map((rect, index) => {
-          console.log(`Rendering Entry ${index}:`, rect);
+        {cardsData.map((card, index) => {
+          const isCurrentCard = index === currentCardIndex;
+          const position = isCurrentCard ? centralAttractorState.position : {
+            x: centralAttractorState.position.x,
+            y: centralAttractorState.position.y + (index - currentCardIndex) * 2
+          };
+
           return (
-            <Entry
-              key={`entry-${index}-${cycleCount}`}
-              text={rect.entry.text}
-              position={rect.position}
-              dimensions={rect.dimensions}
-              index={index}
-              cycleCount={cycleCount}
-            />
+            <motion.div
+              key={card.card_id}
+              className="absolute"
+              initial={false}
+              animate={{
+                scale: isCurrentCard ? 1 : 0.95,
+                opacity: isCurrentCard ? 1 : 0.5,
+                zIndex: cardsData.length - Math.abs(index - currentCardIndex),
+                x: position.x - centralAttractorState.dimensions.width / 2,
+                y: position.y - centralAttractorState.dimensions.height / 2,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30
+              }}
+              style={{
+                width: centralAttractorState.dimensions.width,
+                height: centralAttractorState.dimensions.height,
+                willChange: 'transform',
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              <motion.img
+                src={card.image_url}
+                alt={card.name}
+                className="w-full h-full rounded-3xl object-contain"
+                style={{
+                  filter: isCurrentCard ? 'none' : 'brightness(0.7)',
+                  transition: 'filter 0.3s ease-out'
+                }}
+              />
+            </motion.div>
           );
         })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 w-full h-full">
+      <div ref={sceneRef} className="w-full h-full absolute inset-0 z-10" />
+      
+      {/* Replace the CentralCard with our new stack */}
+      {renderCardStack()}
+
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        {rectangleStates.map((rect, index) => (
+          <Entry
+            key={`entry-${index}-${cycleCount}-${currentCardIndex}`}
+            text={rect.entry.text}
+            position={rect.position}
+            dimensions={rect.dimensions}
+            index={index}
+            cycleCount={cycleCount}
+          />
+        ))}
       </div>
     </div>
   );
