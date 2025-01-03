@@ -1,0 +1,120 @@
+.collective-container {
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    position: fixed;
+    top: 0;
+    left: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.collective-container::-webkit-scrollbar {
+    display: none;
+}
+
+.card-section {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: start;
+}
+
+.card-content {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.card-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 12.5px 100px -10px rgba(50, 50, 73, 0.4),
+               0 10px 10px -10px rgba(50, 50, 73, 0.3);
+}
+
+.entry-text {
+    font-family: 'Papyrus', sans-serif;
+    font-size: 2.4rem;
+    color: #666666;
+    white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.entries-list {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.entry-item {
+    margin-bottom: 10px;
+    text-align: left;
+    max-width: 200px;
+}
+
+.entry-item:hover {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.floating-entries {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.entry-item {
+    position: absolute;
+    display: table;
+    border: 1px solid red;
+    transform: translate(-50%, -50%);
+    padding: 1cm;
+}
+
+.entry-text {
+    margin: 0;
+    line-height: 1.4;
+    white-space: nowrap;
+    display: table-row;
+}
+
+.entry-text:first-child {
+    padding-top: 1cm;
+}
+
+.entry-text:last-child {
+    padding-bottom: 1cm;
+} 
