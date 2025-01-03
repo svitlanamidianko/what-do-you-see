@@ -17,6 +17,7 @@ const CollectiveView = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                console.log('API Response:', data);
                 setCardsData(data.cards);
             } catch (error) {
                 console.error('Error fetching collective view:', error);
@@ -116,36 +117,53 @@ const CollectiveView = () => {
         );
     };
 
+    const CardSection = ({ card }) => {
+        console.log('Card data:', card);
+        return (
+            <div className="card-section">
+                <div 
+                    className="card-content"
+                    onMouseMove={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const mouseX = e.clientX - rect.left - rect.width / 2;
+                        const mouseY = e.clientY - rect.top - rect.height / 2;
+                        const rotateX = (mouseY / rect.height) * -30;
+                        const rotateY = (mouseX / rect.width) * 30;
+                        e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                    }}
+                >
+                    <div className="card-image">
+                        {card.image_url ? (
+                            <img 
+                                src={card.image_url} 
+                                alt={card.title || 'Card image'}
+                                onError={(e) => console.error('Image failed to load:', e)}
+                            />
+                        ) : (
+                            <div style={{ padding: '20px', textAlign: 'center' }}>
+                                No image available
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div 
             className="collective-container"
             style={{ backgroundImage: `url(${backgroundImage})` }}
         >
             {cardsData.map((cardData, index) => (
-                <section 
+                <CardSection 
                     key={cardData.card_id} 
-                    className="card-section"
+                    card={cardData}
                     data-index={index}
-                >
-                    <div className="card-content">
-                        <div className="card-image">
-                            <img src={cardData.image_url} alt="Card" />
-                        </div>
-                        
-                        <div className="floating-entries">
-                            {cardData.entries.map((entry, entryIndex) => {
-                                const lines = splitLongEntry(entry.entry_text);
-                                return (
-                                    <div key={entryIndex} className="entry-item">
-                                        {lines.map((line, lineIndex) => (
-                                            <p key={lineIndex} className="entry-text">{line}</p>
-                                        ))}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
+                />
             ))}
         </div>
     );
