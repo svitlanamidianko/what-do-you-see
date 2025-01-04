@@ -34,14 +34,14 @@ function Deck({ onCardChange, onSwipeComplete }: DeckProps, ref: React.Ref<DeckH
 
   useEffect(() => {
     console.log('Fetching cards...')
-    fetch('http://localhost:7777/api/cards')
+    fetch('https://whatdoyousee-api-weatherered-grass-2856.fly.dev/api/cards')
       .then(response => response.json())
       .then(cardsData => {
         const cardsArray = Array.isArray(cardsData) ? cardsData : Object.values(cardsData);
         const randomCards = getRandomCards(cardsArray, CARDS_TO_SHOW);
         const processedCards = randomCards.map((card: Card) => ({
           ...card,
-          image_path: `http://localhost:7777/api/cards/${encodeURI(card.image_path.split('/').pop() || '')}`
+          image_path: `https://whatdoyousee-api-weatherered-grass-2856.fly.dev/api/cards/${encodeURI(card.image_path.split('/').pop() || '')}`
         }));
         
         console.log('Final processed cards:', processedCards);

@@ -4,6 +4,7 @@ import Matter from 'matter-js';
 import MatterAttractors from 'matter-attractors';
 import { motion, AnimatePresence } from 'framer-motion';
 import './CollectiveView.css';
+import { debounce } from 'lodash';
 
 Matter.use(MatterAttractors);
 
@@ -92,8 +93,8 @@ const Entry = ({ text, position, dimensions, index, cycleCount }) => {
             transition={{ duration: 1.5, delay: index * 0.3 }}
             style={{
               fontWeight: 400,
-              color: 'rgba(255, 255, 255, 0.9)',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              color: '#666666',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}
           >
             {text}
@@ -158,12 +159,13 @@ const CollectiveView = () => {
   const cycleTimerRef = useRef(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isScrollLocked, setIsScrollLocked] = useState(false);
 
   // 1. Fetch data
   useEffect(() => {
     const fetchCollectiveData = async () => {
       try {
-        const response = await fetch(`http://localhost:7777/api/collective-view/${gameId}`);
+        const response = await fetch(`https://whatdoyousee-api-weatherered-grass-2856.fly.dev/api/collective-view/${gameId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -236,7 +238,7 @@ const CollectiveView = () => {
       };
 
       // Calculate card dimensions
-      const targetWidth = 300;
+      const targetWidth = 600;
       const scale = targetWidth / cardImageRef.current.width;
       const cardWidth = cardImageRef.current.width * scale;
       const cardHeight = cardImageRef.current.height * scale;
@@ -375,40 +377,49 @@ const CollectiveView = () => {
 
   // Add scroll handler
   useEffect(() => {
-    const handleScroll = (e) => {
-      if (isTransitioning || !cardsData.length) return;
+    const handleScroll = debounce((e) => {
+      if (isTransitioning || !cardsData.length || isScrollLocked) return;
 
-      // Determine scroll direction
       const scrollDown = e.deltaY > 0;
       
-      if (scrollDown) {
-        setIsTransitioning(true);
-        setCurrentCardIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % cardsData.length;
-          
-          // Update Matter.js bodies with new entries
-          if (rectanglesRef.current) {
-            const newEntries = cardsData[nextIndex].entries;
-            rectanglesRef.current.forEach((rect, i) => {
-              if (newEntries[i]) {
-                rect.entry.text = newEntries[i].entry_text;
-              }
-            });
-          }
-          
-          return nextIndex;
-        });
+      setIsTransitioning(true);
+      setIsScrollLocked(true);
 
-        // Reset transition lock after animation
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 500);
-      }
-    };
+      setCurrentCardIndex((prevIndex) => {
+        let nextIndex;
+        if (scrollDown) {
+          nextIndex = (prevIndex + 1) % cardsData.length;
+        } else {
+          nextIndex = prevIndex - 1;
+          if (nextIndex < 0) nextIndex = cardsData.length - 1;
+        }
+        
+        // Update Matter.js bodies with new entries
+        if (rectanglesRef.current) {
+          const newEntries = cardsData[nextIndex].entries;
+          rectanglesRef.current.forEach((rect, i) => {
+            if (newEntries[i]) {
+              rect.entry.text = newEntries[i].entry_text;
+            }
+          });
+        }
+        
+        return nextIndex;
+      });
+
+      // Reset transition and scroll locks after animation
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setIsScrollLocked(false);
+      }, 1000); // Increased timeout to ensure smooth transitions
+    }, 250, { leading: true, trailing: false }); // Debounce settings
 
     window.addEventListener('wheel', handleScroll);
-    return () => window.removeEventListener('wheel', handleScroll);
-  }, [cardsData.length, isTransitioning]);
+    return () => {
+      window.removeEventListener('wheel', handleScroll);
+      handleScroll.cancel();
+    };
+  }, [cardsData.length, isTransitioning, isScrollLocked]);
 
   // Modify the central card render to show the stack
   const renderCardStack = () => {
@@ -420,7 +431,7 @@ const CollectiveView = () => {
           const isCurrentCard = index === currentCardIndex;
           const position = isCurrentCard ? centralAttractorState.position : {
             x: centralAttractorState.position.x,
-            y: centralAttractorState.position.y + (index - currentCardIndex) * 2
+            y: centralAttractorState.position.y + (index - currentCardIndex) * 4
           };
 
           return (

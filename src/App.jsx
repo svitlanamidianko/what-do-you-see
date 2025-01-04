@@ -50,7 +50,7 @@ function App() {
     try {
       console.log('Submitting entry:', userInput);
       
-      await axios.post('http://localhost:7777/api/createuserentry', {
+      await axios.post('https://whatdoyousee-api-weatherered-grass-2856.fly.dev/api/createuserentry', {
         entry: userInput,
         user_id: userId,
         game_id: currentGameId,
